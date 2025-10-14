@@ -10,7 +10,7 @@ usuarios_db = {
 }
 
 # Variable global para mantener el estado del usuario logeado
-# En una aplicación real, se usarían tokens de sesión
+# En una aplicacion real, se usarian tokens de sesion
 sesion_usuario_actual = None
 
 @app.route('/')
@@ -71,4 +71,5 @@ def transaccion():
     return jsonify({"mensaje": mensaje, "saldo": sesion_usuario_actual['saldo']})
 
 if __name__ == '__main__':
+
     app.run(debug=True)
