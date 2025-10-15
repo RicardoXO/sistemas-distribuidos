@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Fantasía</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #c3a1e2 0%, #ff98a1 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #4a4a4a;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 450px;
+            transition: all 0.5s ease-in-out;
+        }
+        h1 {
+            color: #6a1a8c;
+            text-transform: uppercase;
+        }
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            width: 80%;
+            margin: 10px 0;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+        .login-btn { background-color: #8e44ad; }
+        .login-btn:hover { background-color: #6c3483; transform: scale(1.05); }
+        .btn-accion { background-color: #f1738e; }
+        .btn-accion:hover { background-color: #e0607a; transform: scale(1.05); }
+        #mensaje {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #ff385c;
+            font-weight: bold;
+        }
+        #seccion-cuenta, #seccion-login {
+            display: none;
+        }
+        #saldo-display {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #6a1a8c;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="seccion-login">
+            <h1>Bienvenido</h1>
+            <p>Inicia sesión para acceder a tu cuenta.</p>
+            <form id="login-form">
+                <input type="email" id="emailInput" placeholder="Correo electrónico" required>
+                <input type="password" id="passwordInput" placeholder="Contraseña" required>
+                <button type="submit" class="login-btn">Entrar</button>
+            </form>
+            <div id="mensaje"></div>
+        </div>
+
+        <div id="seccion-cuenta">
+            <h1 id="bienvenida-nombre"></h1>
+            <p>Saldo actual:</p>
+            <div id="saldo-display"></div>
+            
+            <input type="number" id="cantidadInput" placeholder="Cantidad" step="0.01">
+            <div class="botones">
+                <button id="depositarBtn" class="btn-accion">Depositar</button>
+                <button id="retirarBtn" class="btn-accion">Retirar</button>
+            </div>
+            <div id="mensaje-cuenta"></div>
+        </div>
+    </div>
+
+    <script>
+        const seccionLogin = document.getElementById('seccion-login');
+        const seccionCuenta = document.getElementById('seccion-cuenta');
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const bienvenidaNombre = document.getElementById('bienvenida-nombre');
+        const saldoDisplay = document.getElementById('saldo-display');
+        const cantidadInput = document.getElementById('cantidadInput');
+        const depositarBtn = document.getElementById('depositarBtn');
+        const retirarBtn = document.getElementById('retirarBtn');
+        const mensajeLogin = document.getElementById('mensaje');
+        const mensajeCuenta = document.getElementById('mensaje-cuenta');
+
+        // Muestra la sección de login por defecto
+        seccionLogin.style.display = 'block';
+
+        // Lógica de inicio de sesión
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            mensajeLogin.textContent = '';
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, contrasena: password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    bienvenidaNombre.textContent = `¡Hola, ${data.nombre}!`;
+                    seccionLogin.style.display = 'none';
+                    seccionCuenta.style.display = 'block';
+                    actualizarDatosUsuario();
+                } else {
+                    mensajeLogin.textContent = data.error;
+                }
+            } catch (error) {
+                console.error('Error de login:', error);
+                mensajeLogin.textContent = 'Error al conectar con el servidor.';
+            }
+        });
+
+        // Obtiene y muestra los datos del usuario logeado
+        async function actualizarDatosUsuario() {
+            try {
+                const response = await fetch('/datos_usuario');
+                const data = await response.json();
+                if (response.ok) {
+                    saldoDisplay.textContent = `$${data.saldo.toFixed(2)}`;
+                } else {
+                    console.error(data.error);
+                }
+            } catch (error) {
+                console.error('Error al obtener datos de usuario:', error);
+            }
+        }
+
+        // Lógica de transacciones
+        async function realizarTransaccion(accion) {
+            const cantidad = cantidadInput.value;
+            if (cantidad === '' || parseFloat(cantidad) <= 0) {
+                mensajeCuenta.textContent = 'Por favor, ingrese una cantidad válida.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/transaccion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accion: accion, cantidad: parseFloat(cantidad) })
+                });
+
+                const data = await response.json();
+                mensajeCuenta.textContent = data.mensaje || data.error;
+
+                if (response.ok) {
+                    saldoDisplay.textContent = `$${data.saldo.toFixed(2)}`;
+                    cantidadInput.value = ''; // Limpia el campo
+                }
+            } catch (error) {
+                console.error('Error en la transacción:', error);
+                mensajeCuenta.textContent = 'Error al realizar la transacción.';
+            }
+        }
+
+        depositarBtn.addEventListener('click', () => realizarTransaccion('depositar'));
+        retirarBtn.addEventListener('click', () => realizarTransaccion('retirar'));
+    </script>
+</body>
+</html>
