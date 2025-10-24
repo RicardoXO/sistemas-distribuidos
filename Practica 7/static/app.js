@@ -13,7 +13,7 @@ async function cargarTareas() {
     const res = await fetch(API_URL);
     const data = await res.json();
     mostrarTareas(data, false);
-    localStorage.setItem('tareas', JSON.stringify(data)); // 💾 Guardamos una copia local
+    localStorage.setItem('tareas', JSON.stringify(data)); // Guardamos una copia local
     estado.textContent = "🟢 Conectado";
     modoOffline = false;
   } catch {
