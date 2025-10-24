@@ -1,0 +1,10 @@
+mkdir pwa_flask
+cd pwa_flask
+python -m venv venv
+
+venv\Scripts\activate
+py server.py
+
+pip install flask flask-cors
+
+http://127.0.0.1:5000/

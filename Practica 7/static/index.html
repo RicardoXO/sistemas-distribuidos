@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>PWA con Flask - Tareas</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="contenedor">
+    <h1>Mis Tareas</h1>
+
+    <form id="formulario">
+      <input id="nuevaTarea" type="text" placeholder="Escribe una nueva tarea..." required>
+      <button>Agregar</button>
+    </form>
+
+    <h2>Pendientes</h2>
+    <ul id="pendientes"></ul>
+
+    <h2>Completadas</h2>
+    <ul id="completadas"></ul>
+
+    <p id="estado"></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
