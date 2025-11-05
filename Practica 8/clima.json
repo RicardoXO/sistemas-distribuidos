@@ -1,0 +1,17 @@
+{
+    "Bogota": {
+        "temperatura": "19°C",
+        "condicion": "Nublado",
+        "humedad": "75%"
+    },
+    "Lima": {
+        "temperatura": "24°C",
+        "condicion": "Soleado",
+        "humedad": "60%"
+    },
+    "Quito": {
+        "temperatura": "17°C",
+        "condicion": "Lluvias ligeras",
+        "humedad": "80%"
+    }
+}

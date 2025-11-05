@@ -1,0 +1,18 @@
+{
+    "1": {
+        "nombre": "Ana",
+        "ciudad": "Bogota"
+    },
+    "2": {
+        "nombre": "Carlos",
+        "ciudad": "Lima"
+    },
+    "3": {
+        "nombre": "Sofia",
+        "ciudad": "Quito"
+    },
+    "4": {
+        "nombre": "Mateo",
+        "ciudad": "Bogota"
+    }
+}

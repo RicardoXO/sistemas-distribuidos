@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Microservicios</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Dashboard Interactivo</h1>
+
+        <div class="controls">
+            <button id="btnListar">1. Listar Usuarios</button>
+            <select id="selectUsuario" disabled>
+                <option value="">2. Selecciona un usuario</option>
+            </select>
+        </div>
+
+        <div id="resultsCard" class="results-card">
+            <h2>Hola, <span id="nombre_usuario">...</span></h2>
+            
+            <p>Reporte del clima para tu ciudad (<span id="ciudad">...</span>):</p>
+            <ul>
+                <li>Temperatura: <span id="temperatura">...</span></li>
+                <li>Condición: <span id="condicion">...</span></li>
+                <li>Humedad: <span id="humedad">...</span></li>
+            </ul>
+        </div>
+        
+        <p id="error-msg"></p>
+    </div>
+
+    <script>
+        // URLs de nuestros microservicios
+        const urlUsuarios = 'http://localhost:5001/usuarios';
+        const urlClimaBase = 'http://localhost:5002/clima/';
+
+        // Referencias a los elementos del DOM
+        const btnListar = document.getElementById('btnListar');
+        const selectUsuario = document.getElementById('selectUsuario');
+        const resultsCard = document.getElementById('resultsCard');
+        const errorMsg = document.getElementById('error-msg');
+        
+        // Referencias a los campos de texto en la tarjeta
+        const spanNombre = document.getElementById('nombre_usuario');
+        const spanCiudad = document.getElementById('ciudad');
+        const spanTemp = document.getElementById('temperatura');
+        const spanCond = document.getElementById('condicion');
+        const spanHumedad = document.getElementById('humedad');
+
+        /**
+         * Lógica 1: Clic en el botón "Listar Usuarios"
+         */
+        btnListar.addEventListener('click', async () => {
+            try {
+                // Llama al NUEVO endpoint /usuarios
+                const response = await fetch(urlUsuarios);
+                if (!response.ok) throw new Error('No se pudo cargar la lista de usuarios');
+                
+                const usuarios = await response.json(); // Ej: {"1": {"nombre": "Ana"}, "2": ...}
+
+                // Limpiamos el select por si acaso
+                selectUsuario.innerHTML = '<option value="">2. Selecciona un usuario</option>';
+
+                // Llenamos el <select> con los usuarios
+                for (const id in usuarios) {
+                    const usuario = usuarios[id];
+                    const option = document.createElement('option');
+                    option.value = id; // El valor será el ID (ej: "1")
+                    option.textContent = usuario.nombre; // El texto será el Nombre (ej: "Ana")
+                    selectUsuario.appendChild(option);
+                }
+
+                // Activamos el <select> y desactivamos el botón
+                selectUsuario.disabled = false;
+                btnListar.disabled = true;
+                btnListar.textContent = "¡Usuarios cargados!";
+                errorMsg.textContent = "";
+
+            } catch (error) {
+                console.error("Error al listar usuarios:", error.message);
+                errorMsg.textContent = "Error: " + error.message;
+            }
+        });
+
+        /**
+         * Lógica 2: Cambio en el menú <select>
+         */
+        selectUsuario.addEventListener('change', async (event) => {
+            const usuarioID = event.target.value;
+            
+            // Si eligen la opción por defecto ("Selecciona..."), ocultamos la tarjeta
+            if (!usuarioID) {
+                resultsCard.style.display = 'none';
+                return;
+            }
+            
+            // Mostramos la tarjeta y ponemos "cargando..."
+            resultsCard.style.display = 'block';
+            spanNombre.textContent = "cargando...";
+            spanCiudad.textContent = "...";
+            spanTemp.textContent = "...";
+            spanCond.textContent = "...";
+            spanHumedad.textContent = "...";
+            errorMsg.textContent = "";
+
+            try {
+                // --- A. Llamada al Microservicio de Usuarios (por ID) ---
+                const responseUsuario = await fetch(urlUsuarios + '/' + usuarioID);
+                if (!responseUsuario.ok) throw new Error('Ese usuario no fue encontrado');
+                
+                const usuario = await responseUsuario.json();
+                
+                // Actualizamos la UI con los datos del usuario
+                spanNombre.textContent = usuario.nombre;
+                spanCiudad.textContent = usuario.ciudad;
+
+                // --- B. Llamada al Microservicio de Clima ---
+                const responseClima = await fetch(urlClimaBase + usuario.ciudad);
+                if (!responseClima.ok) throw new Error('Clima no encontrado para ' + usuario.ciudad);
+                
+                const clima = await responseClima.json();
+
+                // Actualizamos la UI con los datos del clima
+                spanTemp.textContent = clima.temperatura;
+                spanCond.textContent = clima.condicion;
+                spanHumedad.textContent = clima.humedad;
+
+            } catch (error) {
+                console.error("Error al cargar detalles:", error.message);
+                errorMsg.textContent = "Error: " + error.message;
+                // Ocultamos la tarjeta si hay un error
+                resultsCard.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
